@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amazon Dashboard</title>
+<style>
+  :root {
+    --orange: #ff8a00;
+    --orange-soft: rgba(255, 138, 0, .45);
+    --text: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  /* منع تكرار خلفية الـ body وتوسيط المحتوى */
+  html, body { 
+    height: 100%; 
+    background-color: #0d0d0d;
+    display: grid;
+    place-items: center;
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    overflow: hidden;
+  }
+
+  /* تثبيت العرض 1280 والطول 720 بالضبط */
+  .stage {
+    container-type: inline-size;
+    position: relative;
+    width: 1280px;
+    height: 720px;
+    background: url(image2.png) center / cover no-repeat;
+    overflow: hidden;
+  }
+
+  /* الشعار المتحرك بحجم كبير */
+  .animated-logo {
+    position: absolute;
+    top: -10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: auto;
+    z-index: 10;
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+
+  /* حاوية السلايدر الكلية مع الأسهم */
+  .carousel-wrapper {
+    position: absolute;
+    left: 15%;
+    top: 52%;
+    width: 70%;
+    height: 25%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5cqw;
+  }
+
+  /* نافذة العرض المحدودة لإظهار 3 مربعات فقط */
+  .tabs-viewport {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* الشريط المتحرك للمربعات */
+  .tabs-track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    gap: 1.5cqw;
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  /* أزرار الأسهم */
+  .nav-btn {
+    background: rgba(10, 10, 10, 0.85);
+    border: .15cqw solid var(--orange);
+    color: var(--orange);
+    width: 3.2cqw;
+    height: 3.2cqw;
+    border-radius: 50%;
+    font-size: 1.6cqw;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+    z-index: 15;
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  .nav-btn:hover {
+    background-color: var(--orange);
+    color: #ffffff;
+    transform: scale(1.1);
+    box-shadow: 0 0 1.5cqw rgba(255, 138, 0, 0.6);
+  }
+
+  /* المربع الواحد (بحجم مضبوط ليظهر 3 فقط) */
+  .tab {
+    flex: 0 0 calc((100% - (2 * 1.5cqw)) / 3); /* عرض يسع 3 عناصر بالضبط */
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .6cqw;
+    padding: 1cqw;
+    background: rgba(10, 10, 10, .78);
+    border: .12cqw solid var(--orange-soft);
+    border-radius: 2.6cqw;
+    color: var(--text);
+    font: inherit;
+    font-size: 1.3cqw;
+    line-height: 1.25;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+  }
+
+  .tab:hover { border-color: var(--orange); }
+  .tab:focus-visible { outline: .2cqw solid #fff; outline-offset: .3cqw; }
+
+  /* رقم التاب */
+  .num {
+    position: absolute;
+    top: 1.2cqw;
+    left: 1.5cqw;
+    width: 2cqw;
+    height: 2cqw;
+    display: grid;
+    place-items: center;
+    border: .12cqw solid var(--orange);
+    border-radius: 50%;
+    color: var(--orange);
+    font-size: 1.1cqw;
+    font-weight: 700;
+  }
+
+  .icon {
+    width: 3.2cqw;
+    height: 3.2cqw;
+    fill: none;
+    stroke: var(--orange);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .label { min-height: 2.8cqw; display: flex; align-items: center; }
+
+  /* الخط اللي تحت */
+  .bar {
+    width: 2.9cqw;
+    height: .4cqw;
+    margin-top: .5cqw;
+    border-radius: 1cqw;
+    background: #6b6b6b;
+    transition: background .2s;
+  }
+
+  /* التاب النشط */
+  .tab.active {
+    border: .2cqw solid var(--orange);
+    background: rgba(20, 12, 0, .85);
+    box-shadow: 0 0 2cqw rgba(255, 138, 0, .55), inset 0 0 1.4cqw rgba(255, 138, 0, .18);
+  }
+  .tab.active .num { background: var(--orange); color: #fff; }
+  .tab.active .bar { background: var(--orange); }
+</style>
+</head>
+<body>
+
+<main class="stage">
+  <!-- الشعار المتحرك -->
+  <img src="1745239532509.gif" alt="Amazon Animated Logo" class="animated-logo">
+
+  <!-- حاوية السلايدر والأسهم -->
+  <div class="carousel-wrapper">
+    
+    <!-- سهم اليسار -->
+    <button class="nav-btn" id="prevBtn" aria-label="Previous">&#10094;</button>
+
+    <div class="tabs-viewport">
+      <nav class="tabs-track" id="tabsTrack" aria-label="Sections">
+
+        <button class="tab active" data-target="overview">
+          <span class="num">01</span>
+          <svg class="icon" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-5.5h4V20"/></svg>
+          <span class="label">Overview</span>
+          <span class="bar"></span>
+        </button>
+
+        <button class="tab" data-target="pricing">
+          <span class="num">02</span>
+          <svg class="icon" viewBox="0 0 24 24"><path d="M3 12.2V4h8.2l9.3 9.3a1.4 1.4 0 0 1 0 2l-5.2 5.2a1.4 1.4 0 0 1-2 0L3 12.2Z"/><circle cx="7.5" cy="8.5" r="1.2"/><path d="m9.5 15.5 5-5"/><circle cx="10.2" cy="10.6" r=".6"/><circle cx="14" cy="14.4" r=".6"/></svg>
+          <span class="label">Pricing &amp;<br>Discount Analysis</span>
+          <span class="bar"></span>
+        </button>
+
+        <button class="tab" data-target="category">
+          <span class="num">03</span>
+          <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="14" width="4" height="6"/><rect x="10" y="10" width="4" height="10"/><rect x="17" y="6" width="4" height="14"/><path d="M4 9l5-4 3 2 6-5"/><path d="M15 2h3.5v3.5"/></svg>
+          <span class="label">Category<br>Performance</span>
+          <span class="bar"></span>
+        </button>
+
+        <button class="tab" data-target="customer">
+          <span class="num">04</span>
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M6.5 19v-1.5a5.5 5.5 0 0 1 11 0V19"/><circle cx="5" cy="10" r="2"/><circle cx="19" cy="10" r="2"/><path d="M2 18v-1a3 3 0 0 1 3-3M22 18v-1a3 3 0 0 0-3-3"/></svg>
+          <span class="label">Customer &amp;<br>Review Analysis</span>
+          <span class="bar"></span>
+        </button>
+
+      </nav>
+    </div>
+
+    <!-- سهم اليمين -->
+    <button class="nav-btn" id="nextBtn" aria-label="Next">&#10095;</button>
+
+  </div>
+</main>
+
+<script>
+  const track = document.getElementById('tabsTrack');
+  const tabs = document.querySelectorAll('.tab');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+
+  let currentIndex = 0;
+  const totalTabs = tabs.length;
+  const visibleCount = 3; // عدد العناصر الظاهرة
+  const maxIndex = totalTabs - visibleCount; // أقصى خطوة يمكن الوصول لها
+
+  // تحديث موقع شريط المربعات
+  function updateSlider() {
+    // نسبة الإزاحة لكل عنصر متضمنة الـ gap
+    const shiftPercentage = (100 / visibleCount) + (1.5 / visibleCount); 
+    track.style.transform = `translateX(-${currentIndex * shiftPercentage}%)`;
+  }
+
+  // التحكم بالسهم التالي (اليمين)
+  nextBtn.addEventListener('click', () => {
+    if (currentIndex < maxIndex) {
+      currentIndex++;
+      updateSlider();
+    }
+  });
+
+  // التحكم بالسهم السابق (اليسار)
+  prevBtn.addEventListener('click', () => {
+    if (currentIndex > 0) {
+      currentIndex--;
+      updateSlider();
+    }
+  });
+
+  // تحديد المربع عند الضغط عليه
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
